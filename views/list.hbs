@@ -1,0 +1,62 @@
+<center>
+<h1>Property Listings</h1>
+{{#if message}}
+<div class="w3-panel w3-pale-yellow w3-leftbar
+ w3-rightbar w3-border-orange w3-margin-right w3-margin-left">
+<p>{{message}}</p>
+</div>
+{{/if}}
+</center>
+&emsp; &emsp;<a href = {{addform}}>Add a Property</a><br><br>
+{{#if properties}}
+&emsp; &emsp;We found {{properties.length}} properties.<br>
+
+{{#each properties}}
+<div class="w3-panel w3-pale-green w3-leftbar
+ w3-rightbar w3-border-green w3-margin-right w3-margin-left">
+
+  <table width = "100%" border = 0>
+        <colgroup>
+        <col width="25%"/>
+        <col width="5%"/>
+        <col width="40%"/>
+        <col width="30%"/>
+        </colgroup>
+
+
+      <tr>
+          <td align="right">Prop. Id:</td>
+          <td ></td>
+          <td>{{id}}</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td align="right">Address:</td>
+          <td ></td>
+          <td><b>{{address}}, New York, {{zip}}</b></td>
+          <td align="right">
+                <a href = "/view/{{id}}"><img width="30" src = "../static/file-black-512.png"></a>
+                <a href = "/delete/{{id}}"><img width="45" src = "../static/trash-black-512.png"></a>
+          </td>
+
+
+      </tr>
+      <tr>
+          <td align="right">No. of Units:</td>
+          <td ></td>
+          <td>{{units}}</td>
+          <td></td>
+
+      </tr>
+
+       <tr>
+           <td align="right"></td>
+           <td></td>
+           <td></td>
+          <td></td>
+       </tr>
+      </table>
+</div>
+{{/each}}
+<br><br><br>
+ {{/if}}

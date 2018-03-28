@@ -1,0 +1,35 @@
+<center>
+<h1>{{title}}</h1>
+<p>Welcome to {{title}}</p>
+</center>
+&emsp; &emsp;<a href = "/">Home</a>&emsp;<a href = {{addform}}>Add a property</a><br><br>
+{{#if property}}
+
+<div class="w3-panel w3-pale-green w3-leftbar
+ w3-rightbar w3-border-green w3-margin-right w3-margin-left">
+      <table>
+      <tr>
+          <td align="right">Property Id:</td>
+          <td width="100"></td>
+          <td>{{property.id}}</td>
+      </tr>
+      <tr>
+          <td align="right">Address:</td>
+          <td width="100"></td>
+          <td><b>{{property.address}}, New York, {{zip}}</b></td>
+      </tr>
+      <tr>
+          <td align="right">No. of Units:</td>
+          <td width="100"></td>
+          <td>{{property.units}}</td>
+      </tr>
+
+       <tr>
+           <td align="right"></td>
+           <td width="100"></td>
+           <td></td>
+       </tr>
+      </table>
+</div>
+<br><br><br>
+ {{/if}}
