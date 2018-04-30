@@ -14,7 +14,7 @@ const crypto            = require('crypto');
 const passport          = require('passport');
 const LocalStrategy     = require('passport-local').Strategy;
 const hbs = require('hbs');
-//const hbs              = require( 'express-handlebars' );
+
 
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
