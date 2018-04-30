@@ -19,7 +19,7 @@ const hbs = require('hbs');
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const RedisStore = require('connect-redis')(session)
-
+const bcrypt = require('bcrypt');
 
 const pModel =  require('./props3-model');
 const secret = "cat"
@@ -32,9 +32,8 @@ const secret = "cat"
 
   props.use(flash());
   props.use(cookieParser(secret));
-  props.use(bodyParser());
   props.use(bodyParser.urlencoded({extended: true}))
-
+  props.use(bodyParser.json());
 
   props.use(session({
       cookieName: 'props3sess',
@@ -75,7 +74,7 @@ function calculatePortfolioValue (investments) {
                    expandInvest[key].investorValue = parseFloat(expandInvest[key].propValue * (expandInvest[key].percent/100)).toFixed(2)
                    totalPortfolioValue += parseFloat(expandInvest[key].investorValue)
                   expandInvest[key].propValue = expandInvest[key].propValue.toFixed(2)
-                  console.log(expandInvest[key].id, investments[key].lastname, expandInvest[key].address, expandInvest[key].ownership)
+                  //console.log(expandInvest[key].id, investments[key].lastname, expandInvest[key].address, expandInvest[key].ownership)
              });
 
             return [expandInvest, totalPortfolioValue.toFixed(2)]
@@ -85,6 +84,81 @@ function calculatePortfolioValue (investments) {
 
 
 //============ ROUTES ======================
+
+
+
+
+   props.get('/updateuser/', checkAuthentication, (req, res) => {
+     if (req.session && req.session.passport) {
+        userObj = req.session.passport.user;
+      }
+
+    //  pModel.getUser (req.params.id, (err, user) => {
+    //          //err comes back but not results
+    //          if (err) {
+    //            console.log("Update User problem "+JSON.stringify(err));
+    //          }
+       res.render('updateuser', {
+               userObj: userObj,
+               updateendpoint: '/process_user_update'
+       });
+
+    //}); //end modelRead
+
+  });  //end UPDATE request
+
+
+
+     // process delete
+     props.post('/process_user_update', urlencodedParser, (req, res) => {
+            const data = req.body
+            console.log("Just got form: "+JSON.stringify(data)+"<br>")
+            //check if they entered the right old password
+            //function authuser (email, password, done) {
+            //pModel.authuser (username, password, (err, autheduser) => {
+
+            var updatedUser =
+            {
+              "id":userObj.id,
+              "firstname":data.firstname,
+              "lastname":data.lastname,
+              "email":data.email,
+              "photo":data.photo
+            }
+            //hash the password
+            bcrypt.genSalt(10, function(err, salt) {
+               if (err) return err;
+                   bcrypt.hash(data.newpass, salt, function(err, hash) {
+                                 console.log("hashing "+err)
+                     if (err) return err;
+                     if (data.newpass === "") {
+                            updatedUser.password = userObj.password;
+                     } else updatedUser.password = hash;
+                       console.log("\n\nHere is the New User + Password with hash: "+JSON.stringify(updatedUser))
+
+
+                           pModel.updateUser (updatedUser, (err, status) => {
+                                  //err comes back but not results
+                                  if (err) {
+                                    console.log("\n\nModel Update problem "+JSON.stringify(err));
+                                  } else {
+                                  req.flash('login', "Updated USER "+updatedUser.lastname+".  ")
+                                  console.log("Updated  "+updatedUser.lastname+" with " +JSON.stringify(status));
+                                  res.redirect('/home');
+                                  }
+                          });//updateuser
+                  }); //hash
+          }); //getSalt
+   }); //===== END PROCESS USER UPDATE
+
+
+
+
+
+
+
+
+
 
 props.get('/investors', checkAuthentication, (req, res) => {
 
@@ -118,7 +192,7 @@ props.get('/investors', checkAuthentication, (req, res) => {
                                             //let expandPortfolio = calculatePortfolioValue(investments)[0]  //dont need this
                                              expandInvestors[investorIndex].numOfDeals = investments.length;
                                              expandInvestors[investorIndex].totalPortfolioValue = calculatePortfolioValue(investments)[1]
-                                             console.log("IN RECURSION: "+ expandInvestors[investorIndex].id, expandInvestors[investorIndex].lastname, expandInvestors[investorIndex].totalPortfolioValue, expandInvestors[investorIndex].numOfDeals)
+                                             //console.log("IN RECURSION: "+ expandInvestors[investorIndex].id, expandInvestors[investorIndex].lastname, expandInvestors[investorIndex].totalPortfolioValue, expandInvestors[investorIndex].numOfDeals)
                                              //setTimeout(1000);
                                              doRecursionForInvestor(investorIndex+1, tot)
 
@@ -126,17 +200,17 @@ props.get('/investors', checkAuthentication, (req, res) => {
 
                          } else {
 
-                           console.log("done recursion")
+                           //console.log("done recursion")
                            res.render('investors', {
                                    userObj: userObj,
-                                   sessioninfo: sessioninfo,
+                                   sessioninfo: "PW: "+userObj.password,
                                    message: req.flash('login') + "Showing "+investors.length+" investors.",
                                    investors: expandInvestors
                            });//render
 
 
                          }
-                        console.log("done with a loop")
+                        //console.log("done with a loop")
 
                   }  // doRecursionForInvestor
 
@@ -146,16 +220,6 @@ props.get('/investors', checkAuthentication, (req, res) => {
 
 }); //  /inevestors route
 
-
-
-
-
-
-
-
-  // getallprops: getallprops,
-  // getallinvestors:  getallinvestors,
-  // getportfoliolist: getportfoliolist,
 
 
 
@@ -201,6 +265,7 @@ props.get('/investors', checkAuthentication, (req, res) => {
 
     if (req.session && req.session.passport) {
        userObj = req.session.passport.user;
+
      }
 
 
@@ -223,7 +288,7 @@ props.get('/investors', checkAuthentication, (req, res) => {
 
                   res.render('list', {
                           userObj: userObj,
-                          sessioninfo: sessioninfo,
+                          sessioninfo: "PW:" + userObj.password,
                           message: req.flash('login') + "Showing "+properties.length+" properties.",
                           properties: expandProperties
                   });
@@ -335,19 +400,11 @@ props.post('/checklogin', function(req, res, next) {
 
 
 
-  //list all properties
-  props.get('/props', (req, res) => {
-      res.redirect('/properties');
-
-  });
-
 //trying HBS page
 props.get('/', function(req, res) {
      res.redirect('/home')
 
 }); // END LIST =============
-
-
 
 
 
@@ -357,7 +414,6 @@ props.get('/delete/:id', checkAuthentication, (req, res) => {
           if (err) {
             console.log("Props3: del request problem "+JSON.stringify(err));
           }
-//<a href = "/delete/{{id}}"><img width="45" src = "../static/trash-black-512.png"></a>
     res.render('delprop', {
             title: 'Delete a Property',
             property: entity,
@@ -381,7 +437,7 @@ props.get('/delete/:id', checkAuthentication, (req, res) => {
                       console.log("Props2: Delete problem "+JSON.stringify(err));
                     } else { //deleted OK
                     //res.send("Deleted Property ID "+data.id);
-                    req.flash('login', "Deleted Property "+data.id)
+                    req.flash('login', "Deleted Property "+data.id+".  ")
                     res.redirect('/properties');
                     }
 
@@ -392,6 +448,8 @@ props.get('/delete/:id', checkAuthentication, (req, res) => {
 
 
 }); //===== END PROCESS DELETE
+
+
 
 
 props.get('/addprop', checkAuthentication, (req, res) => {
@@ -458,7 +516,7 @@ passport.use(new LocalStrategy(
                         console.log("strategy: user "+ username +" not found ");
                         return done(null, false);
                  }
-                 console.log("HAVE autheduser is "+autheduser.firstname);
+                 console.log("OK autheduser is "+autheduser.firstname);
                  return done(null, autheduser);
 
           }) //loginuser

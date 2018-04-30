@@ -3,7 +3,9 @@
 
 const extend = require('lodash').assign;
 const mysql = require('mysql');
-const config = require('./prop3config');  //runs verification
+const config = require('./prop3config');
+const bcrypt = require('bcrypt');
+
 let options = {};
 
 if (config.get('NODE_ENV') === 'gcloud') {
@@ -58,30 +60,54 @@ connection.connect(function(err) {
 });
 
 
-function authuser (email, password, cb) {
+function authuser (email, password, done) {
   connection.query(
     'SELECT * FROM users WHERE email = ?', email,  (err, results) => {
       if (!err && !results.length) {
-              cb("Not found "+ email+" got "+err, null);
+              done("Not found "+ email+" got "+err, null);
               return;
       }
 
       if (err) {
-        cb("Search error" +err, null);
+        done("Search error" +err, null);
         return;
       }
 
-      if (!(password === results[0].password)) {
-          console.log("bad pw, db had "+results[0].password)
-          cb("bad password", null)
-          return
-      }
-    console.log(results[0].firstname+" has authed in authuser");
-    cb(null, results[0]);
-
+     let checkPlainPW = (password === results[0].password)
+     bcrypt.compare(password, results[0].password, function(err, res) {
+                   if (err) {
+                     console.log("PW auth error" +err)
+                     done("PW auth error" +err, null);
+                     return;
+                   }
+                  if (!(checkPlainPW) && !(res) ) {
+                      console.log("\nbad pw "+password+", res is: "+res+"   checkPlainPW is: "+checkPlainPW)
+                      done("bad password", null)
+                      return
+                  }
+                console.log(results[0].firstname+" has authed in authuser");
+                done(null, results[0]);
+   }); //chaeckHashPW
   } //cb function
  ) //connection querty
 } //authuser
+
+
+function updateuser (updateuser, done) {
+    console.log("Here at update: email:"+ updateuser.email +" PW:"+updateuser.password+" ID:"+updateuser.id)
+    connection.query(
+        'UPDATE users SET email = ?, photo =?, password=? WHERE id=?',
+        [updateuser.email, updateuser.photo, updateuser.password, updateuser.id],
+        function(err, status)  {
+                if (err) {
+                  done(err, null);
+                  return;
+                }
+                done(null, status);
+    }); //connection.query
+  } //updateuser
+
+
 
 
 
@@ -159,7 +185,7 @@ function create (data, cb) {
     }
 
    read(res.insertId, cb);
-    
+
   });
 }
 // [END create]
@@ -202,6 +228,7 @@ module.exports = {
   //createSchema: createSchema,
   finduser: finduser,
   authuser: authuser,
+  updateUser: updateuser,
   getAllProps: getallprops,
   getAllInvestors:  getallinvestors,
   getPortfolioList: getportfoliolist,
