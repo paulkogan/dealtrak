@@ -4,8 +4,9 @@
 <table width = "100%" border = 0 >
 
 <tr><td>
-  <font family = 'courier' size='5'><b>DealTrak</b> - Properties List</font>
+  <font family = 'courier' size='5'><b>DealTrak</b> - Investor Portfolio</font>
 </td><td align = "right">
+
 <a href = '/portfolio/{{userObj.id}}'>{{userObj.firstname}}</a>&emsp;<img width='50' src={{userObj.photo}}>
 </td></tr>
 
@@ -17,25 +18,25 @@
 
 <tr><td>
   <br>
-  > {{message}}
+  > Portfolio for: <b>{{portfolioOwner}}</b>
 </td></tr>
 </table>
 </div>
 
-
-{{#if properties}}
-{{#each properties}}
+{{#if investments}}
+{{#each investments}}
 <div class="w3-panel w3-pale-green w3-leftbar
  w3-rightbar w3-border-green w3-margin-right w3-margin-left">
 
   <table width = "100%" border = 0>
         <colgroup>
-        <col width="10%"/>
-        <col width="35%"/>
         <col width="5%"/>
+        <col width="30%"/>
         <col width="15%"/>
-        <col width="20%"/>
         <col width="15%"/>
+        <col width="15%"/>
+        <col width="10%"/>
+        <col width="5%"/>
         </colgroup>
 
 
@@ -46,13 +47,15 @@
             <td></td>
             <td></td>
             <td></td>
+            <td></td>
         </tr>
       <tr>
           <td align="center">{{id}}</td>
           <td align="left"><b>{{address}}, New York, {{zip}}</b></td>
-          <td></td>
           <td >{{units}} units</td>
-          <td>${{propValue}} M *</td>
+          <td>${{propValue}}M</td>
+          <td>{{percent}}%</td>
+          <td>${{investorValue}}M</td>
           <td align="left">
                 <a href = "/view/{{id}}"><img width="30" src = "../static/file-black-512.png"></a>
           </td>
@@ -64,14 +67,42 @@
           <td></td>
           <td></td>
           <td></td>
+          <td></td>
       </tr>
-
       </table>
 </div>
 {{/each}}
-<br>
  {{/if}}
-  &emsp; &emsp;* Property Value calculated using CAPM.
-<br><br>
- &emsp; &emsp;Session:{{sessioninfo}}
+ <div class="w3-panel w3-pale-green w3-leftbar
+  w3-rightbar w3-bottombar w3-border-green w3-margin-right w3-margin-left">
+  <table width = "100%" border = 0>
+        <colgroup>
+        <col width="5%"/>
+        <col width="30%"/>
+        <col width="10%"/>
+        <col width="10%"/>
+        <col width="29%"/>
+        <col width="10%"/>
+        <col width="10%"/>
+        </colgroup>
+
+
+
+      <tr>
+        <td></td>
+        <td>{{message}}</td>
+        <td></td>
+        <td></td>
+        <td>Total Portfolio Value:</td>
+        <td><b>${{totalPortfolioValue}}M</b></td>
+        <td></td>
+      </tr>
+
+
+      </table>
+
+</div>
+
+ &emsp; &emsp;<br>
+ &emsp;&emsp;<br>
  <br><br>

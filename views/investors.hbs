@@ -4,7 +4,7 @@
 <table width = "100%" border = 0 >
 
 <tr><td>
-  <font family = 'courier' size='5'><b>DealTrak</b> - Property Details</font>
+  <font family = 'courier' size='5'><b>DealTrak</b> - Investors Roster</font>
 </td><td align = "right">
 <a href = '/portfolio/{{userObj.id}}'>{{userObj.firstname}}</a>&emsp;<img width='50' src={{userObj.photo}}>
 </td></tr>
@@ -17,23 +17,26 @@
 
 <tr><td>
   <br>
-{{message}}
+  > {{message}}
 </td></tr>
 </table>
 </div>
 
-{{#if property}}
+
+{{#if investors}}
+{{#each investors}}
 <div class="w3-panel w3-pale-green w3-leftbar
  w3-rightbar w3-border-green w3-margin-right w3-margin-left">
 
   <table width = "100%" border = 0>
         <colgroup>
         <col width="10%"/>
-        <col width="35%"/>
         <col width="5%"/>
-        <col width="15%"/>
         <col width="20%"/>
-        <col width="15%"/>
+        <col width="25%"/>
+        <col width="10%"/>
+        <col width="10%"/>
+        <col width="10%"/>
         </colgroup>
 
 
@@ -44,17 +47,21 @@
             <td></td>
             <td></td>
             <td></td>
+            <td></td>
         </tr>
-      <tr>
-          <td align="center">ID: {{property.id}}</td>
-          <td align="left"><b>{{property.address}}, New York, {{zip}}</b></td>
-          <td></td>
-          <td >{{property.units}} units</td>
-          <td>${{property.propValue}} M</td>
+      <tr border = 1>
+          <td align="center">{{id}}</td>
+          <td><img width='30' src={{photo}}></td>
+          <td align="left"><b>{{firstname}} {{lastname}}</b></td>
+          <td>  {{email}}</td>
+          <td >{{numOfDeals}} deals</td>
+          <td>${{totalPortfolioValue}}M</td>
           <td align="left">
+                <a href = "/portfolio/{{id}}"><img width="30" src = "../static/file-black-512.png"></a>
           </td>
       </tr>
       <tr>
+          <td></td>
           <td></td>
           <td></td>
           <td></td>
@@ -65,5 +72,8 @@
 
       </table>
 </div>
+{{/each}}
 <br><br><br>
  {{/if}}
+ &emsp; &emsp;Session:{{sessioninfo}}
+ <br><br>
