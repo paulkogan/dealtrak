@@ -85,73 +85,59 @@ function calculatePortfolioValue (investments) {
 
 //============ ROUTES ======================
 
+props.get('/viewprop/:id', checkAuthentication, (req, res) => {
 
-
-
-   props.get('/updateuser/', checkAuthentication, (req, res) => {
      if (req.session && req.session.passport) {
-        userObj = req.session.passport.user;
+          userObj = req.session.passport.user;
       }
 
-    //  pModel.getUser (req.params.id, (err, user) => {
-    //          //err comes back but not results
-    //          if (err) {
-    //            console.log("Update User problem "+JSON.stringify(err));
-    //          }
-       res.render('updateuser', {
-               userObj: userObj,
-               updateendpoint: '/process_user_update'
-       });
-
-    //}); //end modelRead
-
-  });  //end UPDATE request
+     sessioninfo = JSON.stringify(req.session);
 
 
+     pModel.read (req.params.id, (err, entity) => {
+           //err comes back but not results
+           if (err) {
+             console.log("Viewprop problem "+JSON.stringify(err));
+           }
 
-     // process delete
-     props.post('/process_user_update', urlencodedParser, (req, res) => {
-            const data = req.body
-            console.log("Just got form: "+JSON.stringify(data)+"<br>")
-            //check if they entered the right old password
-            //function authuser (email, password, done) {
-            //pModel.authuser (username, password, (err, autheduser) => {
+           let expandProperty = entity
+           expandProperty.propValue = parseFloat(expandProperty.units*unitValue);
 
-            var updatedUser =
-            {
-              "id":userObj.id,
-              "firstname":data.firstname,
-              "lastname":data.lastname,
-              "email":data.email,
-              "photo":data.photo
-            }
-            //hash the password
-            bcrypt.genSalt(10, function(err, salt) {
-               if (err) return err;
-                   bcrypt.hash(data.newpass, salt, function(err, hash) {
-                                 console.log("hashing "+err)
-                     if (err) return err;
-                     if (data.newpass === "") {
-                            updatedUser.password = userObj.password;
-                     } else updatedUser.password = hash;
-                       console.log("\n\nHere is the New User + Password with hash: "+JSON.stringify(updatedUser))
+           pModel.getInvestorList(entity.id, function(err, investors){
+                   if (err) {
+                         //next(err);
+                         console.log("Investor problems "+err);
+                         return;
+                   }
+                   let expandPropInvestors = investors
+                   let totalInvestorsOwnership = 0.00
+                   let totalInvestorsValue = 0.00
+                   investors.forEach(function(item, key) {
+                         expandPropInvestors[key].percent = parseFloat(investors[key].ownership)/10;
+                         totalInvestorsOwnership += expandPropInvestors[key].percent
+                         expandPropInvestors[key].investmentValue = expandProperty.propValue * (expandPropInvestors[key].percent/100)
+                         totalInvestorsValue += expandPropInvestors[key].investmentValue
+                         expandPropInvestors[key].investmentValue = expandPropInvestors[key].investmentValue.toFixed(2)
+                         expandPropInvestors[key].percent  = expandPropInvestors[key].percent .toFixed(2)
 
-
-                           pModel.updateUser (updatedUser, (err, status) => {
-                                  //err comes back but not results
-                                  if (err) {
-                                    console.log("\n\nModel Update problem "+JSON.stringify(err));
-                                  } else {
-                                  req.flash('login', "Updated USER "+updatedUser.lastname+".  ")
-                                  console.log("Updated  "+updatedUser.lastname+" with " +JSON.stringify(status));
-                                  res.redirect('/home');
-                                  }
-                          });//updateuser
-                  }); //hash
-          }); //getSalt
-   }); //===== END PROCESS USER UPDATE
+                  }) //foreach
+                  expandProperty.propValue = expandProperty.propValue.toFixed(2)
 
 
+                 res.render('viewprop', {
+                         property: expandProperty,
+                         investors: expandPropInvestors,
+                         totalinvestorsvalue: totalInvestorsValue.toFixed(2),
+                         totalinvestorsownership: totalInvestorsOwnership.toFixed(2),
+                         userObj: userObj,
+                         sessioninfo: JSON.stringify(req.session),
+                         message: req.flash('login'),
+
+                 });
+
+          }); //get investor list
+    }); //read
+});   // END VIEWPROP =========
 
 
 
@@ -203,7 +189,7 @@ props.get('/investors', checkAuthentication, (req, res) => {
                            //console.log("done recursion")
                            res.render('investors', {
                                    userObj: userObj,
-                                   sessioninfo: "PW: "+userObj.password,
+                                   sessioninfo: JSON.stringify(req.session),
                                    message: req.flash('login') + "Showing "+investors.length+" investors.",
                                    investors: expandInvestors
                            });//render
@@ -288,7 +274,7 @@ props.get('/investors', checkAuthentication, (req, res) => {
 
                   res.render('list', {
                           userObj: userObj,
-                          sessioninfo: "PW:" + userObj.password,
+                          sessioninfo:  JSON.stringify(req.session),
                           message: req.flash('login') + "Showing "+properties.length+" properties.",
                           properties: expandProperties
                   });
@@ -298,38 +284,63 @@ props.get('/investors', checkAuthentication, (req, res) => {
 
 
 
-    props.get('/view/:id', checkAuthentication, (req, res) => {
+    props.get('/updateuser/', checkAuthentication, (req, res) => {
+          if (req.session && req.session.passport) {
+             userObj = req.session.passport.user;
+           }
 
-            if (req.session && req.session.passport) {
-                 userObj = req.session.passport.user;
+          res.render('updateuser', {
+                  userObj: userObj,
+                  updateendpoint: '/process_user_update'
+          });
+   });  //end UPDATE request
+
+
+
+      props.post('/process_user_update', urlencodedParser, (req, res) => {
+             const data = req.body
+             console.log("Just got form: "+JSON.stringify(data)+"<br>")
+             //check if they entered the right old password
+             //function authUser (email, password, done) {
+             //pModel.authUser (username, password, (err, autheduser) => {
+
+             var updatedUser =
+             {
+               "id":userObj.id,
+               "firstname":data.firstname,
+               "lastname":data.lastname,
+               "email":data.email,
+               "photo":data.photo
              }
-
-            sessioninfo = JSON.stringify(req.session);
-
-
-            pModel.read (req.params.id, (err, entity) => {
-                    //err comes back but not results
-                    if (err) {
-                      console.log("Props2: View problem "+JSON.stringify(err));
-                    }
-
-
-                    let expandProperty = entity
-                    expandProperty.propValue = (expandProperty.units*unitValue).toFixed(2);;
+             //hash the password
+             bcrypt.genSalt(10, function(err, salt) {
+                if (err) return err;
+                    bcrypt.hash(data.newpass, salt, function(err, hash) {
+                                  console.log("hashing "+err)
+                      if (err) return err;
+                      if (data.newpass === "") {
+                             updatedUser.password = userObj.password;
+                      } else updatedUser.password = hash;
+                        console.log("\n\nHere is the New User + Password with hash: "+JSON.stringify(updatedUser))
 
 
-                    res.render('viewprop', {
-                            property: expandProperty,
-                            userObj: userObj,
-                            sessioninfo: sessioninfo,
-                            message: req.flash('login'),
+                            pModel.updateUser (updatedUser, (err, status) => {
+                                   //err comes back but not results
+                                   if (err) {
+                                     console.log("\n\nModel Update problem "+JSON.stringify(err));
+                                   } else {
+                                   req.flash('login', "Updated USER "+updatedUser.lastname+".  ")
+                                   console.log("Updated  "+updatedUser.lastname+" with " +JSON.stringify(status));
+                                   res.redirect('/home');
+                                   }
+                           });//updateuser
+                   }); //hash
+           }); //getSalt
+    }); //===== END PROCESS USER UPDATE
 
-                    });
 
+// ========== HOME & AUTH ========================
 
-            });
-
-      });   // END VIEW =========
 
 
   props.get('/home', (req, res) => {
@@ -351,6 +362,22 @@ props.get('/investors', checkAuthentication, (req, res) => {
               menuoptions: menuOptions
       });
 
+  });
+
+
+props.get('/logout', function(req, res){
+    req.logout();
+    userObj =
+    {
+      "id":0,
+      "firstname":"Log In",
+      "lastname":"",
+      "email":"",
+      "password":"",
+      "photo":"https://raw.githubusercontent.com/wilsonvargas/ButtonCirclePlugin/master/images/icon/icon.png",
+      "access":0
+    }
+    res.redirect('/login');
   });
 
 
@@ -505,7 +532,7 @@ passport.use(new LocalStrategy(
     passReqToCallback: true
   },
   (req, username, password, done) => {
-         pModel.authuser (username, password, (err, autheduser) => {
+         pModel.authUser (username, password, (err, autheduser) => {
                  //err comes back but not results
                  if (err) {
                    console.log("call to model is err "+JSON.stringify(err));

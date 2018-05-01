@@ -94,7 +94,7 @@ function authuser (email, password, done) {
 
 
 function updateuser (updateuser, done) {
-    console.log("Here at update: email:"+ updateuser.email +" PW:"+updateuser.password+" ID:"+updateuser.id)
+    console.log("\n\nHere at update: email:"+ updateuser.email +" PW:"+updateuser.password+" ID:"+updateuser.id)
     connection.query(
         'UPDATE users SET email = ?, photo =?, password=? WHERE id=?',
         [updateuser.email, updateuser.photo, updateuser.password, updateuser.id],
@@ -103,7 +103,7 @@ function updateuser (updateuser, done) {
                   done(err, null);
                   return;
                 }
-                done(null, status);
+                done(null, status.affectedRows);
     }); //connection.query
   } //updateuser
 
@@ -141,6 +141,23 @@ function getportfoliolist (user_id, done) {
     }
   );
 }
+
+
+function getinvestorlist (property_id, done) {
+     connection.query(
+        'SELECT u.id as user_id, u.firstname, u.lastname, i.ownership as ownership, u.photo from investments as i'
+        +' JOIN users as u ON u.id = i.user_id'
+        +' JOIN reprops as p ON p.id = i.prop_id WHERE prop_id = ?',property_id,
+        function(err, results)  {
+                  if (err) {
+                    done(err, null);
+                    return;
+                  }
+                  done(null, results);
+     });//connectionquery
+} //getinvestorlist
+
+
 
 
 // [START get allprops]
@@ -226,11 +243,12 @@ function read (id, cb) {
 
 module.exports = {
   //createSchema: createSchema,
-  finduser: finduser,
-  authuser: authuser,
+  findUser: finduser,
+  authUser: authuser,
   updateUser: updateuser,
   getAllProps: getallprops,
   getAllInvestors:  getallinvestors,
+  getInvestorList:getinvestorlist,
   getPortfolioList: getportfoliolist,
   create: create,
   read: read,
