@@ -4,7 +4,7 @@
 const extend = require('lodash').assign;
 const mysql = require('mysql');
 const config = require('./prop3config');
-const bcrypt = require('bcrypt');
+//const bcrypt = require('bcrypt');
 
 let options = {};
 
@@ -35,6 +35,19 @@ if (config.get('NODE_ENV') === 'ebaws') {
           port: 3306
         };
 }
+
+
+if (config.get('NODE_ENV') === 'ebawsfromGC') {
+        options = {
+          user: 'propsDB',
+          password: config.get('MYSQL_PASSWORD'),
+          host: "18.216.80.132",
+  //        host: 'aa1q3akhb3ona6q.cdlgrjtshtb6.us-east-2.rds.amazonaws.com',
+          database: 'ebdb',
+          port: 3306
+        };
+}
+
 
 // var connection = mysql.createConnection({
 //   host     : process.env.RDS_HOSTNAME,
@@ -74,12 +87,12 @@ function authuser (email, password, done) {
       }
 
      let checkPlainPW = (password === results[0].password)
-     bcrypt.compare(password, results[0].password, function(err, res) {
-                   if (err) {
-                     console.log("PW auth error" +err)
-                     done("PW auth error" +err, null);
-                     return;
-                   }
+    //  bcrypt.compare(password, results[0].password, function(err, res) {
+    //                if (err) {
+    //                  console.log("PW auth error" +err)
+    //                  done("PW auth error" +err, null);
+    //                  return;
+    //                }
                   if (!(checkPlainPW) && !(res) ) {
                       console.log("\nbad pw "+password+", res is: "+res+"   checkPlainPW is: "+checkPlainPW)
                       done("bad password", null)
@@ -87,7 +100,7 @@ function authuser (email, password, done) {
                   }
                 console.log(results[0].firstname+" has authed in authuser");
                 done(null, results[0]);
-   }); //chaeckHashPW
+  // }); //chaeckHashPW
   } //cb function
  ) //connection querty
 } //authuser
@@ -145,7 +158,7 @@ function getportfoliolist (user_id, done) {
 
 function getinvestorlist (property_id, done) {
      connection.query(
-        'SELECT u.id as user_id, u.firstname, u.lastname, i.ownership as ownership, u.photo from investments as i'
+        'SELECT u.id as user_id, u.firstname, u.lastname, i.ownership as ownership, u.photo  from investments as i'
         +' JOIN users as u ON u.id = i.user_id'
         +' JOIN reprops as p ON p.id = i.prop_id WHERE prop_id = ?',property_id,
         function(err, results)  {

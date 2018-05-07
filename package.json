@@ -1,10 +1,13 @@
 {
-  "name": "props2",
+  "name": "props3",
   "version": "1.0.0",
   "description": "Properties with HBS and Experess",
-  "main": "props2.js",
+  "main": "props3.js",
+  "engines": {
+            "node": "10.0.0"
+   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node props3.js"
   },
   "keywords": [
     "properties",
@@ -13,10 +16,27 @@
   "author": "Paul Kogan",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^2.0.1",
+    "body-parser": "^1.18.2",
+    "connect-flash": "^0.1.1",
+    "connect-flash-plus": "^0.2.1",
+    "connect-redis": "^3.3.3",
+    "cookie-parser": "^1.4.3",
+    "crypto": "^1.0.1",
     "express": "^4.16.3",
+    "express-handlebars": "^3.0.0",
+    "express-session": "^1.15.6",
     "hbs": "^4.0.1",
     "lodash": "^4.17.5",
     "mysql": "^2.15.0",
-    "nconf": "^0.10.0"
+    "nconf": "^0.10.0",
+    "npm-run-all": "^4.1.2",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "none"
   }
 }

@@ -19,7 +19,7 @@ const hbs = require('hbs');
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const RedisStore = require('connect-redis')(session)
-const bcrypt = require('bcrypt');
+//const bcrypt = require('bcrypt');
 
 const pModel =  require('./props3-model');
 const secret = "cat"
@@ -61,7 +61,7 @@ let userObj =
   "access":0
 }
 
-const unitValue = 2.7
+const unitValue = 2.8
 
 function calculatePortfolioValue (investments) {
           let expandInvest = [];
@@ -310,18 +310,22 @@ props.get('/investors', checkAuthentication, (req, res) => {
                "firstname":data.firstname,
                "lastname":data.lastname,
                "email":data.email,
-               "photo":data.photo
+               "photo":data.photo,
+               "password":data.newpass
              }
+
+
              //hash the password
-             bcrypt.genSalt(10, function(err, salt) {
-                if (err) return err;
-                    bcrypt.hash(data.newpass, salt, function(err, hash) {
-                                  console.log("hashing "+err)
-                      if (err) return err;
-                      if (data.newpass === "") {
-                             updatedUser.password = userObj.password;
-                      } else updatedUser.password = hash;
-                        console.log("\n\nHere is the New User + Password with hash: "+JSON.stringify(updatedUser))
+            //  bcrypt.genSalt(10, function(err, salt) {
+            //     if (err) return err;
+            //         bcrypt.hash(data.newpass, salt, function(err, hash) {
+            //                       console.log("hashing "+err)
+            //           if (err) return err;
+                       if (data.newpass === "") {
+                            updatedUser.password = userObj.password;
+                        }
+            //           } else updatedUser.password = hash;
+            //             console.log("\n\nHere is the New User + Password with hash: "+JSON.stringify(updatedUser))
 
 
                             pModel.updateUser (updatedUser, (err, status) => {
@@ -334,8 +338,8 @@ props.get('/investors', checkAuthentication, (req, res) => {
                                    res.redirect('/home');
                                    }
                            });//updateuser
-                   }); //hash
-           }); //getSalt
+                  // }); //hash
+          // }); //getSalt
     }); //===== END PROCESS USER UPDATE
 
 
