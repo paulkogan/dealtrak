@@ -4,8 +4,8 @@
   "description": "Properties with HBS and Experess",
   "main": "props3.js",
   "engines": {
-            "node": "10.0.0"
-   },
+    "node": ">=7.4.0"
+  },
   "scripts": {
     "start": "node props3.js"
   },
