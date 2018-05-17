@@ -23,6 +23,7 @@ const bcrypt = require('bcrypt');
 
 const pModel =  require('./props3-model');
 const secret = "cat"
+const propsVersion = 1.5
 //var router = express.Router();  then call router.post('/')
 
   props.set('views', path.join(__dirname, 'views'));
@@ -363,7 +364,8 @@ props.get('/investors', checkAuthentication, (req, res) => {
       res.render('home', {
               userObj: userObj,
               message: req.flash('login'),
-              menuoptions: menuOptions
+              menuoptions: menuOptions,
+              propsVersion: propsVersion
       });
 
   });
