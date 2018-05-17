@@ -4,26 +4,10 @@
 const extend = require('lodash').assign;
 const mysql = require('mysql');
 const config = require('./prop3config');
-//const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 
 let options = {};
 
-if (config.get('NODE_ENV') === 'gcloud') {
-        options = {
-          user: config.get('MYSQL_USER'),
-          password: config.get('MYSQL_PASSWORD'),
-          database: 'bookshelf'
-        };
-}
-
-if (config.get('NODE_ENV') === 'gcloudsocket') {
-        options = {
-          user: config.get('MYSQL_USER'),
-          password: config.get('MYSQL_PASSWORD'),
-          database: 'bookshelf',
-          socketPath: '/cloudsql/bookshelf-198000:us-east1:bookshelf-lib'
-        };
-}
 
 
 if (config.get('NODE_ENV') === 'ebaws') {
@@ -36,7 +20,7 @@ if (config.get('NODE_ENV') === 'ebaws') {
         };
 }
 
-
+//tried but not working
 if (config.get('NODE_ENV') === 'ebawsfromGC') {
         options = {
           user: 'propsDB',
@@ -48,13 +32,27 @@ if (config.get('NODE_ENV') === 'ebawsfromGC') {
         };
 }
 
+if (config.get('NODE_ENV') === 'dtgc-local') {
+        options = {
+          user: "dealsDBadmin",
+          password: config.get('MYSQL_PASSWORD'),
+          //host: "35.227.22.191",
+          database: "dtgc",
+          //socketPath: '/cloudsql/dealtrak-202821:us-east1:dealtrak-db'
+          //port: 3306
+        };
+}
 
-// var connection = mysql.createConnection({
-//   host     : process.env.RDS_HOSTNAME,
-//   user     : process.env.RDS_USERNAME,
-//   password : process.env.RDS_PASSWORD,
-//   port     : process.env.RDS_PORT
-// });
+if (config.get('NODE_ENV') === 'dtgc-prod') {
+        options = {
+          user: "dealsDBadmin",
+          password: config.get('MYSQL_PASSWORD'),
+          //host: "35.227.22.191",
+          database: "dtgc"
+          //socketPath: '/cloudsql/dealtrak-202821:us-east1:dealtrak-db'
+          //port: 3306
+        };
+}
 
 
 
@@ -87,12 +85,13 @@ function authuser (email, password, done) {
       }
 
      let checkPlainPW = (password === results[0].password)
-    //  bcrypt.compare(password, results[0].password, function(err, res) {
-    //                if (err) {
-    //                  console.log("PW auth error" +err)
-    //                  done("PW auth error" +err, null);
-    //                  return;
-    //                }
+     //res is result of comparing encrypted apsswords
+     bcrypt.compare(password, results[0].password, function(err, res) {
+                   if (err) {
+                     console.log("PW auth error" +err)
+                     done("PW auth error" +err, null);
+                     return;
+                   }
                   if (!(checkPlainPW) && !(res) ) {
                       console.log("\nbad pw "+password+", res is: "+res+"   checkPlainPW is: "+checkPlainPW)
                       done("bad password", null)
@@ -100,7 +99,7 @@ function authuser (email, password, done) {
                   }
                 console.log(results[0].firstname+" has authed in authuser");
                 done(null, results[0]);
-  // }); //chaeckHashPW
+    }); //chaeckHashPW
   } //cb function
  ) //connection querty
 } //authuser

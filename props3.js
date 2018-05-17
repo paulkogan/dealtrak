@@ -19,7 +19,7 @@ const hbs = require('hbs');
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const RedisStore = require('connect-redis')(session)
-//const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 
 const pModel =  require('./props3-model');
 const secret = "cat"
@@ -117,8 +117,9 @@ props.get('/viewprop/:id', checkAuthentication, (req, res) => {
                          totalInvestorsOwnership += expandPropInvestors[key].percent
                          expandPropInvestors[key].investmentValue = expandProperty.propValue * (expandPropInvestors[key].percent/100)
                          totalInvestorsValue += expandPropInvestors[key].investmentValue
+                         //make them 2 digit strings
                          expandPropInvestors[key].investmentValue = expandPropInvestors[key].investmentValue.toFixed(2)
-                         expandPropInvestors[key].percent  = expandPropInvestors[key].percent .toFixed(2)
+                         expandPropInvestors[key].percent  = expandPropInvestors[key].percent.toFixed(2)
 
                   }) //foreach
                   expandProperty.propValue = expandProperty.propValue.toFixed(2)
@@ -311,23 +312,22 @@ props.get('/investors', checkAuthentication, (req, res) => {
                "lastname":data.lastname,
                "email":data.email,
                "photo":data.photo,
-               "password":data.newpass
+               "password": "nopass"
              }
 
 
-             //hash the password
-            //  bcrypt.genSalt(10, function(err, salt) {
-            //     if (err) return err;
-            //         bcrypt.hash(data.newpass, salt, function(err, hash) {
-            //                       console.log("hashing "+err)
-            //           if (err) return err;
-                       if (data.newpass === "") {
-                            updatedUser.password = userObj.password;
-                        }
-            //           } else updatedUser.password = hash;
-            //             console.log("\n\nHere is the New User + Password with hash: "+JSON.stringify(updatedUser))
-
-
+             //hash the NEW password - changing password
+              bcrypt.genSalt(10, function(err, salt) {
+                     if (err) return err;
+                     bcrypt.hash(data.newpass, salt, function(err, hash) {
+                            console.log("hashing "+err)
+                            if (err) return err;
+                            if (data.newpass === "") {
+                                updatedUser.password = userObj.password;
+                            } else {
+                                 updatedUser.password = hash
+                            }
+                            console.log("\n\nHere is the New User v5 "+JSON.stringify(updatedUser))
                             pModel.updateUser (updatedUser, (err, status) => {
                                    //err comes back but not results
                                    if (err) {
@@ -338,8 +338,8 @@ props.get('/investors', checkAuthentication, (req, res) => {
                                    res.redirect('/home');
                                    }
                            });//updateuser
-                  // }); //hash
-          // }); //getSalt
+                   }); //hash
+           }); //getSalt
     }); //===== END PROCESS USER UPDATE
 
 
@@ -393,9 +393,8 @@ props.get('/login', (req, res) => {
 });
 
 
-// Note that when using a custom callback, it becomes the application's
-// responsibility to establish a session (by calling req.login()) and send a response.
 
+//grab info, call strategy
 props.post('/checklogin', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
 
@@ -529,8 +528,6 @@ module.exports = props;
 
 
 //========== passport STRATEGY =========
-
-
 passport.use(new LocalStrategy(
   {
     passReqToCallback: true
